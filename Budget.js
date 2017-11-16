@@ -39,7 +39,7 @@
     // ============================= UPDATE EMAIL AND ACCOUNT SCRIPT WILL BE RUN ON =============
     // ============================== EXAMPLE BELOW =============================================
     function notify(string) {
-      MailApp.sendEmail("eric.king@comporium.com", "Batesburg - 7/19/16-7/16/18", string);
+      MailApp.sendEmail("email@email.com", "Account Name Here - Example - Date - Monthly Impressions", string);
     }
     // ==========================================================================================
     // ==========================================================================================
