@@ -21,7 +21,7 @@
   function main() {
     // Get the Current Account
     var currentAccount = AdWordsApp.currentAccount();
-    
+    //add a comment to see it done
     
     // Get the Current Campaigns in the Account
      var campaignIterator = AdWordsApp.campaigns().get();
