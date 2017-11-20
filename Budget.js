@@ -1,4 +1,15 @@
+// ----------------------------------------------------------------------------
+
 // Budget Script
+// ----------------------------------------------------------------------------
+// Version 0.5
+// ----------------------------------------------------------------------------
+// ChangeLog
+//
+// Added Notify function for email
+// Rework of conditional logic to account for a max budget based on calculations
+// Updated conditional of campaigns that have exceeded montly impression goals
+  // what to update the budget to? - set to min budget
 
 
 // Get the Current Account - .currentAccount()
@@ -15,6 +26,8 @@
   // if the budget is === 0 exit
   // else if the daily budget is above the calculated daily budget => adjust campaign.getBudget.setAmount(dailyBudget); 
   // else if the daily budget falls below the calculated daily budget => adjust campaign.getBudget.setAmount(dailyBudget);
+
+
 
 
 
@@ -53,7 +66,7 @@
     
     // =================== ENTER TOTAL MONTHLY IMPRESSIONS BASED ON ORDER  ======================
     // =================== CHANGE PLACEHOLDER NUMBER ============================================
-                        var orderedImpressions = 30000;
+                        var orderedImpressions = 10000;
     //===========================================================================================
     
     // Current Impressions at today's date
@@ -61,6 +74,8 @@
     var avgCpm = currentAccount.getStatsFor("LAST_7_DAYS");
     var currentImpressions = stats.getImpressions();
     var currentCpm = avgCpm.getAverageCpm();
+    var maxBudget = 4.50;
+    var minBudget = .10;
     Logger.log("avg cpm - last 7 days: " + currentCpm);
     Logger.log("current campaign impressions: " + currentImpressions);
     
@@ -129,9 +144,9 @@
       // email notification - BUDGET HAS FALLEN TO 0!
       notify("Budget has depleted for this account - please take a look at the account.");
     }
-    else if(dailyBudget < 0 && dailyBudget > 2) {
-      Logger.log("Daily budget is outside of where we want it to be - " + dailyBudget);
-      notify("Budget calculated incorrectly or has moved above $2");
+    else if(dailyBudget < 0) {
+      Logger.log("Daily budget is outside of where we want it to be - may be a negative number " + dailyBudget);
+      notify("Budget calculated incorrectly");
     }
     else if(dailyImpressions < 0) {
       Logger.log("Daily Impressions have overdelivered");
@@ -139,7 +154,12 @@
         Logger.log("Calculated daily impressions are over monthly total...");
         // email notification
         notify("Calculated daily impressions have exceeded the monthly total - please take a look at this account");
+        adjustBudget(minBudget);
       }
+    }
+    else if (dailyBudget > 5) {
+      Logger.log("Budget has calculated over an amount of $5 - adjusting to max budget amount of $4.50");
+      adjustBudget(maxBudget);
     }
     else if(currentDailyBudget > dailyBudget) {
       Logger.log("Budget has increased over daily calculated budget - adjusting ...");
