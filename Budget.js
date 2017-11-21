@@ -75,7 +75,7 @@
     var currentImpressions = stats.getImpressions();
     var currentCpm = avgCpm.getAverageCpm();
     var maxBudget = 4.50;
-    var minBudget = .10;
+    var decrementByPercentage = dailyBudget * .25;
     Logger.log("avg cpm - last 7 days: " + currentCpm);
     Logger.log("current campaign impressions: " + currentImpressions);
     
@@ -129,6 +129,8 @@
         }
     }
     }
+
+   
   
   
   //   Failsafe 1 - If campaign over delivered (If calculated impressions = negative)
@@ -154,7 +156,7 @@
         Logger.log("Calculated daily impressions are over monthly total...");
         // email notification
         notify("Calculated daily impressions have exceeded the monthly total - please take a look at this account");
-        adjustBudget(minBudget);
+        adjustBudget(decrementByPercentage);
       }
     }
     else if (dailyBudget > 5) {
