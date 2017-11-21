@@ -9,7 +9,7 @@
 // Added Notify function for email
 // Rework of conditional logic to account for a max budget based on calculations
 // Updated conditional of campaigns that have exceeded montly impression goals
-  // what to update the budget to? - set to min budget
+  // Updated decremental variable to multiply by .25 and adjust budget down.
 
 
 // Get the Current Account - .currentAccount()
@@ -21,6 +21,7 @@
 // Calculate Daily Impressions - remainingImpression / remaningDays
 // Calculate Daily Budget - (currentImpressions / 1000 * 1.25)
 // Get current Campaign Daily Budget - campaign.getBudget().getAmount();
+// New - Need to add another check for the type of campaign strategy - if Max Clicks - don't run the script.
 // ==== Conditional Checks ====
 // check daily budget for current campaign
   // if the budget is === 0 exit
@@ -46,13 +47,18 @@
               // Grab the current daily budget
               var currentDailyBudget = campaign.getBudget().getAmount();
               Logger.log("currentDailyBudget: " + currentDailyBudget);
+
+              var currentBiddingStrategy = campaign.getBiddingStrategyType();
+              Logger.log("Current bidding strategy: " + currentBiddingStrategy);
+
+              return currentBiddingStrategy;
       }
       
     // Email function to pass string and send through to email provided
     // ============================= UPDATE EMAIL AND ACCOUNT SCRIPT WILL BE RUN ON =============
     // ============================== EXAMPLE BELOW =============================================
     function notify(string) {
-      MailApp.sendEmail("email@email.com", "Account Name Here - Example - Date - Monthly Impressions", string);
+      MailApp.sendEmail("email@email.com", "Account Name", string);
     }
     // ==========================================================================================
     // ==========================================================================================
@@ -78,6 +84,15 @@
     var decrementByPercentage = dailyBudget * .25;
     Logger.log("avg cpm - last 7 days: " + currentCpm);
     Logger.log("current campaign impressions: " + currentImpressions);
+
+    var biddingStrategySelector = AdWordsApp
+    .biddingStrategies();
+
+    var biddingStrategyIterator = biddingStrategySelector.get();
+    while (biddingStrategyIterator.hasNext()) {
+      var biddingStrategy = biddingStrategyIterator.next();
+      Logger.log("Bidding Stragegy: " + biddingStrategy);
+    }
     
       // Date Calculation
       var _MS_PER_DAY = 1000 * 60 * 60 * 24;
@@ -145,6 +160,10 @@
       Logger.log("Budget is 0");
       // email notification - BUDGET HAS FALLEN TO 0!
       notify("Budget has depleted for this account - please take a look at the account.");
+    }
+    else if (currentBiddingStrategy != "MAX_CPM") {
+      Logger.log("Not a correct bidding strategy for this script - please use the correct script");
+      notify("Not a correct bidding strategy for this script - please use the correct script");
     }
     else if(dailyBudget < 0) {
       Logger.log("Daily budget is outside of where we want it to be - may be a negative number " + dailyBudget);
