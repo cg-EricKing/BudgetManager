@@ -161,7 +161,7 @@
       // email notification - BUDGET HAS FALLEN TO 0!
       notify("Budget has depleted for this account - please take a look at the account.");
     }
-    else if (currentBiddingStrategy != "MAX_CPM") {
+    else if (currentBiddingStrategy != "MANUAL_CPM") {
       Logger.log("Not a correct bidding strategy for this script - please use the correct script");
       notify("Not a correct bidding strategy for this script - please use the correct script");
     }
