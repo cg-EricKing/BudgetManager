@@ -51,7 +51,6 @@
               var currentBiddingStrategy = campaign.getBiddingStrategyType();
               Logger.log("Current bidding strategy: " + currentBiddingStrategy);
 
-              return currentBiddingStrategy;
       }
       
     // Email function to pass string and send through to email provided
