@@ -14,7 +14,7 @@
 // Created Spreadsheet Template for users to work in - Adds Data from account and has graphs
   // https://docs.google.com/spreadsheets/d/10TDE42Jz6tk5PAstWssNa7OYKDJwNFw_RBXkmN2dFy0/edit?usp=sharing
 // Added Spreadsheet to work with variables and tie in with script - no longer need to hard-code script
-
+// Calculating days remaining in the Excel spreadsheet to avoid issues with Date()
 
 // Get the Current Account - .currentAccount()
 // Get the Current Campaign - AdWordsApp.campaigns().get();
@@ -47,9 +47,8 @@
       while(campaignIterator.hasNext()) {
           var campaign = campaignIterator.next();
           Logger.log(campaign.getName());
-          //var endDateObject = campaign.getEndDate();
-        	//var endDateString = endDateObject.month + " " + endDateObject.day + " " + endDateObject.year;
-        	//var newDateFromEndDate = new Date(endDateString);
+          // var endDateObject = campaign.getEndDate();
+        	// var endDateString = string(endDateObject.month + "-" + endDateObject.day + "-" + endDateObject.year);
           
               // Grab the current daily budget
               var currentDailyBudget = campaign.getBudget().getAmount();
@@ -167,30 +166,34 @@
       var biddingStrategy = biddingStrategyIterator.next();
       Logger.log("Bidding Stragegy: " + biddingStrategy);
     }
-    
-      // Date Calculation
-      var _MS_PER_DAY = 1000 * 60 * 60 * 24;
-      var today = new Date();
-      var dateFrom = new Date("2017-12-31");
+      // New days remaining variable - comes from spreadsheet
+      var newDaysRemaining = sheet.getRange(5,2).getValue();
+      newDaysRemaining = parseInt(newDaysRemaining);
+      Logger.log("New Days Remaining Variable From SS: " + newDaysRemaining);
 
-      var remainingDays    = dateDiffInDays(dateFrom, today);
-      Logger.log("Days remaining: " + remainingDays);
+      // // Date Calculation
+      // var _MS_PER_DAY = 1000 * 60 * 60 * 24;
+      // var today = new Date();
+      // var dateFrom = new Date("2017-12-31");
+
+      // var remainingDays    = dateDiffInDays(dateFrom, today);
+      // Logger.log("Days remaining: " + remainingDays);
       
-      if (remainingDays > 0 ) { // Apply you login on remaining days
-      }
-      function dateDiffInDays(dateFrom, today) {
-        // Discard the time and time-zone information.
-        var utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-        var utc2 = Date.UTC(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
+      // if (remainingDays > 0 ) { // Apply you login on remaining days
+      // }
+      // function dateDiffInDays(dateFrom, today) {
+      //   // Discard the time and time-zone information.
+      //   var utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+      //   var utc2 = Date.UTC(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
       
-        return Math.floor((utc2 - utc1) / _MS_PER_DAY);
-      }
+      //   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
+      // }
       
       // Calculate the number or impressions left
       var impressionsRemaining = orderedImpressions - currentImpressions;
       
       // Calculate the number of daily impressions
-      var dailyImpressions = impressionsRemaining / remainingDays;
+      var dailyImpressions = impressionsRemaining / newDaysRemaining;
       Logger.log("calcualted daily Impressions: " + dailyImpressions);
       
       // Calculate the daily budget
