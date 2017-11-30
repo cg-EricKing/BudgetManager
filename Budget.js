@@ -1,8 +1,9 @@
 // ----------------------------------------------------------------------------
 
 // Budget Script
+// Created by Eric King
 // ----------------------------------------------------------------------------
-// Version 0.5
+// Version 0.8
 // ----------------------------------------------------------------------------
 // ChangeLog
 //
@@ -10,6 +11,9 @@
 // Rework of conditional logic to account for a max budget based on calculations
 // Updated conditional of campaigns that have exceeded montly impression goals
   // Updated decremental variable to multiply by .25 and adjust budget down.
+// Created Spreadsheet Template for users to work in - Adds Data from account and has graphs
+  // https://docs.google.com/spreadsheets/d/10TDE42Jz6tk5PAstWssNa7OYKDJwNFw_RBXkmN2dFy0/edit?usp=sharing
+// Added Spreadsheet to work with variables and tie in with script - no longer need to hard-code script
 
 
 // Get the Current Account - .currentAccount()
@@ -43,6 +47,9 @@
       while(campaignIterator.hasNext()) {
           var campaign = campaignIterator.next();
           Logger.log(campaign.getName());
+          //var endDateObject = campaign.getEndDate();
+        	//var endDateString = endDateObject.month + " " + endDateObject.day + " " + endDateObject.year;
+        	//var newDateFromEndDate = new Date(endDateString);
           
               // Grab the current daily budget
               var currentDailyBudget = campaign.getBudget().getAmount();
@@ -53,14 +60,40 @@
 
       }
       
-    // Email function to pass string and send through to email provided
-    // ============================= UPDATE EMAIL AND ACCOUNT SCRIPT WILL BE RUN ON =============
-    // ============================== EXAMPLE BELOW =============================================
-    function notify(string) {
-      MailApp.sendEmail("email@email.com", "Account Name", string);
-    }
-    // ==========================================================================================
-    // ==========================================================================================
+  // Spreadsheet Start
+  var SPREADSHEET_URL = 'https://docs.google.com/spreadsheets/d/10TDE42Jz6tk5PAstWssNa7OYKDJwNFw_RBXkmN2dFy0/edit?usp=sharing';
+  
+  var COLUMN = {
+    accountName: 2,
+    orderedImpressions: 3,
+    email: 4,
+    endDate: 5
+  };
+  
+  var ROW = 2;
+  
+  Logger.log('Using spreadsheet - %s.', SPREADSHEET_URL);
+  var spreadsheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL);
+  var sheet = spreadsheet.getSheets()[0];
+  var endRow = sheet.getRange(2,4);
+
+ 
+ 
+  
+    var accountName = sheet.getRange(ROW, COLUMN.accountName).getValue();
+    var orderedImpressions = sheet.getRange(ROW, COLUMN.orderedImpressions).getValue();
+    var emailForNotify = sheet.getRange(ROW, COLUMN.email).getValue();
+    
+    Logger.log("Account Name From SS: " + accountName);
+    Logger.log("Ordered Impressions From SS: " + orderedImpressions);
+    Logger.log("Email For Notify From SS: " + emailForNotify);
+  
+ 
+
+  // Email function to pass string and send through to email provided
+  function notify(string) {
+    MailApp.sendEmail(emailForNotify, "Account Name", string);
+  }
       
     // Calculating daily budget
     // Total ordered monthly impressions - current impressions = impressions remaining for the month
@@ -68,19 +101,61 @@
     // impressions remaining for the month / days remaining before end of the month = estimated daily impressions needed per day
   
     // estimated daily impressions needed per day * Avg CPM from last 7 days = new daily budget
-    
-    // =================== ENTER TOTAL MONTHLY IMPRESSIONS BASED ON ORDER  ======================
-    // =================== CHANGE PLACEHOLDER NUMBER ============================================
-                        var orderedImpressions = 10000;
-    //===========================================================================================
-    
-    // Current Impressions at today's date
-    var stats = currentAccount.getStatsFor("THIS_MONTH");
     var avgCpm = currentAccount.getStatsFor("LAST_7_DAYS");
-    var currentImpressions = stats.getImpressions();
+    // Current Stats at Today's Date
+    var currentStats = currentAccount.getStatsFor("THIS_MONTH");
+    var currentImpressions = currentStats.getImpressions();
+    var currentClicks = currentStats.getClicks();
+    var currentConversions = currentStats.getConversions();
     var currentCpm = avgCpm.getAverageCpm();
+    var currentCtr = currentStats.getCtr();
+    var currentCost = currentStats.getCost();
+
+    var currentStatsValues = [
+      [currentImpressions, currentClicks, currentConversions, currentCpm, currentCtr, currentCost]
+    ];
+    var currentRange = sheet.getRange('B7:G7');
+    currentRange.setValues(currentStatsValues);
+
+    // Last Month Stats
+    var lastMonthStats = currentAccount.getStatsFor("LAST_MONTH");
+    var lastImpressions = lastMonthStats.getImpressions();
+    var lastClicks = lastMonthStats.getClicks();
+    var lastConversions = lastMonthStats.getConversions();
+    var lastAvgCpm = lastMonthStats.getAverageCpm();
+    var lastCtr = lastMonthStats.getCtr();
+    var lastCost = lastMonthStats.getCost();
+
+    var lastMonthStatValues = [
+      [lastImpressions, lastClicks, lastConversions, lastAvgCpm, lastCtr, lastCost]
+    ];
+    var lastRange = sheet.getRange('B8:G8');
+    lastRange.setValues(lastMonthStatValues);
+
+    // All Time Stats
+    var allTimeStats = currentAccount.getStatsFor("ALL_TIME");
+    var allImpressions = allTimeStats.getImpressions();
+    var allClicks = allTimeStats.getClicks();
+    var allConversions = allTimeStats.getConversions();
+    var allAvgCpm = allTimeStats.getAverageCpm();
+    var allCtr = allTimeStats.getCtr();
+    var allCost = allTimeStats.getCost();
+
+    var allTimeStatValues = [
+      [allImpressions, allClicks, allConversions, allAvgCpm, allCtr, allCost]
+    ];
+    var allRange = sheet.getRange('B9:G9');
+    allRange.setValues(allTimeStatValues);
+    
+    
+    
+    
+    
+    
     var maxBudget = 4.50;
     var decrementByPercentage = dailyBudget * .25;
+    
+    
     Logger.log("avg cpm - last 7 days: " + currentCpm);
     Logger.log("current campaign impressions: " + currentImpressions);
 
@@ -95,12 +170,9 @@
     
       // Date Calculation
       var _MS_PER_DAY = 1000 * 60 * 60 * 24;
-      var today    = new Date();
-      // ======================== ENTER END OF MONTH DATE FROM HERE ==========================================
-      // ======================== MAKE SURE IT IS INSIDE "" =====================================
-                            var dateFrom    = new Date("2017-11-30");
-      // ========================================================================================
-      // ========================================================================================
+      var today = new Date();
+      var dateFrom = new Date("2017-12-31");
+
       var remainingDays    = dateDiffInDays(dateFrom, today);
       Logger.log("Days remaining: " + remainingDays);
       
@@ -167,6 +239,7 @@
     else if(dailyBudget < 0) {
       Logger.log("Daily budget is outside of where we want it to be - may be a negative number " + dailyBudget);
       notify("Budget calculated incorrectly");
+      // adjustBudget(decrementByPercentage);
     }
     else if(dailyImpressions < 0) {
       Logger.log("Daily Impressions have overdelivered");
