@@ -16,26 +16,6 @@
 // Added Spreadsheet to work with variables and tie in with script - no longer need to hard-code script
 // Calculating days remaining in the Excel spreadsheet to avoid issues with Date()
 
-// Get the Current Account - .currentAccount()
-// Get the Current Campaign - AdWordsApp.campaigns().get();
-// Total Impressions Ordered - Hard Coded
-// Current Impressions at todays date - stats.getImpressions();
-// Calculate Total Days - dateDiffInDays();
-// Calcualte Remaining Impressions - (currentImpressions - orderedImpressions)
-// Calculate Daily Impressions - remainingImpression / remaningDays
-// Calculate Daily Budget - (currentImpressions / 1000 * 1.25)
-// Get current Campaign Daily Budget - campaign.getBudget().getAmount();
-// New - Need to add another check for the type of campaign strategy - if Max Clicks - don't run the script.
-// ==== Conditional Checks ====
-// check daily budget for current campaign
-  // if the budget is === 0 exit
-  // else if the daily budget is above the calculated daily budget => adjust campaign.getBudget.setAmount(dailyBudget); 
-  // else if the daily budget falls below the calculated daily budget => adjust campaign.getBudget.setAmount(dailyBudget);
-
-
-
-
-
   function main() {
     // Get the Current Account
     var currentAccount = AdWordsApp.currentAccount();
@@ -73,19 +53,20 @@
   
   Logger.log('Using spreadsheet - %s.', SPREADSHEET_URL);
   var spreadsheet = SpreadsheetApp.openByUrl(SPREADSHEET_URL);
-  var sheet = spreadsheet.getSheets()[0];
+  var sheet = spreadsheet.getSheets()[1];
   var endRow = sheet.getRange(2,4);
+  sheet.clearContents();
 
  
  
   
-    var accountName = sheet.getRange(ROW, COLUMN.accountName).getValue();
-    var orderedImpressions = sheet.getRange(ROW, COLUMN.orderedImpressions).getValue();
-    var emailForNotify = sheet.getRange(ROW, COLUMN.email).getValue();
+  var accountName = sheet.getRange(ROW, COLUMN.accountName).getValue();
+  var orderedImpressions = sheet.getRange(ROW, COLUMN.orderedImpressions).getValue();
+  var emailForNotify = sheet.getRange(ROW, COLUMN.email).getValue();
     
-    Logger.log("Account Name From SS: " + accountName);
-    Logger.log("Ordered Impressions From SS: " + orderedImpressions);
-    Logger.log("Email For Notify From SS: " + emailForNotify);
+  Logger.log("Account Name From SS: " + accountName);
+  Logger.log("Ordered Impressions From SS: " + orderedImpressions);
+  Logger.log("Email For Notify From SS: " + emailForNotify);
   
  
 
@@ -94,13 +75,8 @@
     MailApp.sendEmail(emailForNotify, "Account Name", string);
   }
       
-    // Calculating daily budget
-    // Total ordered monthly impressions - current impressions = impressions remaining for the month
-  
-    // impressions remaining for the month / days remaining before end of the month = estimated daily impressions needed per day
-  
-    // estimated daily impressions needed per day * Avg CPM from last 7 days = new daily budget
-    var avgCpm = currentAccount.getStatsFor("LAST_7_DAYS");
+
+
     // Current Stats at Today's Date
     var currentStats = currentAccount.getStatsFor("THIS_MONTH");
     var currentImpressions = currentStats.getImpressions();
@@ -115,6 +91,11 @@
     ];
     var currentRange = sheet.getRange('B7:G7');
     currentRange.setValues(currentStatsValues);
+
+    // estimated daily impressions needed per day * Avg CPM from last 7 days = new daily budget
+    var avgCpm = currentAccount.getStatsFor("LAST_7_DAYS");
+    Logger.log("avg cpm - last 7 days: " + currentCpm);
+    Logger.log("current campaign impressions: " + currentImpressions);
 
     // Last Month Stats
     var lastMonthStats = currentAccount.getStatsFor("LAST_MONTH");
@@ -147,17 +128,7 @@
     allRange.setValues(allTimeStatValues);
     
     
-    
-    
-    
-    
-    var maxBudget = 4.50;
-    var decrementByPercentage = dailyBudget * .25;
-    
-    
-    Logger.log("avg cpm - last 7 days: " + currentCpm);
-    Logger.log("current campaign impressions: " + currentImpressions);
-
+    // Bidding strategy check
     var biddingStrategySelector = AdWordsApp
     .biddingStrategies();
 
@@ -166,46 +137,36 @@
       var biddingStrategy = biddingStrategyIterator.next();
       Logger.log("Bidding Stragegy: " + biddingStrategy);
     }
-      // New days remaining variable - comes from spreadsheet
-      var newDaysRemaining = sheet.getRange(5,2).getValue();
-      newDaysRemaining = parseInt(newDaysRemaining);
-      Logger.log("New Days Remaining Variable From SS: " + newDaysRemaining);
 
-      // // Date Calculation
-      // var _MS_PER_DAY = 1000 * 60 * 60 * 24;
-      // var today = new Date();
-      // var dateFrom = new Date("2017-12-31");
-
-      // var remainingDays    = dateDiffInDays(dateFrom, today);
-      // Logger.log("Days remaining: " + remainingDays);
-      
-      // if (remainingDays > 0 ) { // Apply you login on remaining days
-      // }
-      // function dateDiffInDays(dateFrom, today) {
-      //   // Discard the time and time-zone information.
-      //   var utc1 = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
-      //   var utc2 = Date.UTC(dateFrom.getFullYear(), dateFrom.getMonth(), dateFrom.getDate());
-      
-      //   return Math.floor((utc2 - utc1) / _MS_PER_DAY);
-      // }
-      
-      // Calculate the number or impressions left
-      var impressionsRemaining = orderedImpressions - currentImpressions;
-      
-      // Calculate the number of daily impressions
-      var dailyImpressions = impressionsRemaining / newDaysRemaining;
-      Logger.log("calcualted daily Impressions: " + dailyImpressions);
-      
-      // Calculate the daily budget
-      var dailyBudget = dailyImpressions / 1000 * currentCpm;
-      Logger.log("calculated daily budget: " + dailyBudget);
+  // Calculating daily budget
+    // Total ordered monthly impressions - current impressions = impressions remaining for the month
   
-  // This function is the one that might need some adjustment based on testing
+    // impressions remaining for the month / days remaining before end of the month = estimated daily impressions needed per day  
+    var maxBudget = 4.50;
+    var decrementByPercentage = dailyBudget * .25;
+
+    // New days remaining variable - comes from spreadsheet
+    var newDaysRemaining = sheet.getRange(5,2).getValue();
+    newDaysRemaining = parseInt(newDaysRemaining);
+    Logger.log("New Days Remaining Variable From SS: " + newDaysRemaining);
+
+    // Calculate the number or impressions left
+    var impressionsRemaining = orderedImpressions - currentImpressions;
+      
+    // Calculate the number of daily impressions
+    var dailyImpressions = impressionsRemaining / newDaysRemaining;
+    Logger.log("calcualted daily Impressions: " + dailyImpressions);
+      
+    // Calculate the daily budget
+    var dailyBudget = dailyImpressions / 1000 * currentCpm;
+    Logger.log("calculated daily budget: " + dailyBudget);
+  
+  // This function takes a campaign budget - logs the current budget and sets the new amount of the given 
+  // budget parameter
   
     function adjustBudget(budgetToAdjust) {
       var currentCampaigns = AdWordsApp.campaigns().get();
       if(currentCampaigns.hasNext()) {
-        // var campaignSelected = campaignIterator().next();
         var currentBudgetToAdjust = campaign.getBudget();
         Logger.log("current budget: " + currentBudgetToAdjust);
         var getAllBudgetToAdjust = currentBudgetToAdjust.campaigns().get();
@@ -214,25 +175,13 @@
           var allCampaignsCurrentBudgets = getAllBudgetToAdjust.next();
           allCampaignsCurrentBudgets.getBudget().setAmount(budgetToAdjust);
           Logger.log(allCampaignsCurrentBudgets.getName());
-          //Logger.log(allCampaignsCurrentBudgets.getAmount());
         }
     }
     }
 
-   
-  
-  
-  //   Failsafe 1 - If campaign over delivered (If calculated impressions = negative)
-  // If total current impressions > ordered impressions
-  //               Set [new ordered impressions] to 50% of ordered impressions and adjust budget
-  
-  // Failsafe 2 - If daily budget is an error
-  // Daily budget should never be $2
-    
     // Conditional checks to track the budget flow
     if(currentDailyBudget === 0) {
       Logger.log("Budget is 0");
-      // email notification - BUDGET HAS FALLEN TO 0!
       notify("Budget has depleted for this account - please take a look at the account.");
     }
     else if (currentBiddingStrategy != "MANUAL_CPM") {
@@ -248,7 +197,6 @@
       Logger.log("Daily Impressions have overdelivered");
       if(dailyImpressions > orderedImpressions) {
         Logger.log("Calculated daily impressions are over monthly total...");
-        // email notification
         notify("Calculated daily impressions have exceeded the monthly total - please take a look at this account");
         adjustBudget(decrementByPercentage);
       }
@@ -260,13 +208,11 @@
     else if(currentDailyBudget > dailyBudget) {
       Logger.log("Budget has increased over daily calculated budget - adjusting ...");
       adjustBudget(dailyBudget);
-      //email notification - Budget adjusted over calculated daily budget for
       notify("Budget has increased over the daily calculated budget and has been adjusted for this account");
     } 
     else if(currentDailyBudget < dailyBudget) {
       Logger.log("Budget has decreased over daily calculated budget - adjusting ...");
       adjustBudget(dailyBudget);
-      // email notification - Budget adjusted below the calculated daily budget for
       notify("Budget has decreased below the daily calculated budget and has been adjusted for this account.");
     }
     else {
