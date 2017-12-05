@@ -19,6 +19,7 @@
 function main() {
 // Get the Current Account
 var currentAccount = AdWordsApp.currentAccount();
+var accountName = currentAccount.getName();
 //add a comment to see it done
   
 // estimated daily impressions needed per day * Avg CPM from last 7 days = new daily budget
@@ -78,7 +79,7 @@ Logger.log("Email For Notify From SS: " + emailForNotify);
 
 // Email function to pass string and send through to email provided
 function notify(string) {
-  MailApp.sendEmail(emailForNotify, "Account Name", string);
+  MailApp.sendEmail(emailForNotify, accountName, string);
 }
 
 
@@ -162,10 +163,15 @@ function notify(string) {
     
   // Calculate the number of daily impressions
   var dailyImpressions = impressionsRemaining / newDaysRemaining;
+  dailyImpressions = dailyImpressions.toFixed(0);
+  var dailyImpressionsRange = sheet.getRange(13,4);
+  var dailyImpressionArray = [[dailyImpressions]];
+  dailyImpressionsRange.setValues(dailyImpressionArray);
   Logger.log("calcualted daily Impressions: " + dailyImpressions);
     
   // Calculate the daily budget
   var dailyBudget = dailyImpressions / 1000 * currentCpm;
+  dailyBudget = dailyBudget.toFixed(2);
   var budgetCalcRange = sheet.getRange(13, 3);
   var dailyBudgetArray = [[dailyBudget]];
   budgetCalcRange.setValues(dailyBudgetArray);
