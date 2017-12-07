@@ -97,7 +97,7 @@ function notify(string) {
   var currentStatsValues = [
     [currentImpressions, currentClicks, currentConversions, currentCpm, currentCtr, currentCost, currentConRate]
   ];
-  var currentRange = sheet.getRange('B7:H7');
+  var currentRange = sheet.getRange('B8:H8');
   currentRange.setValues(currentStatsValues);
 
   Logger.log("avg cpm - last 7 days: " + currentCpm);
@@ -116,7 +116,7 @@ function notify(string) {
   var lastMonthStatValues = [
     [lastImpressions, lastClicks, lastConversions, lastAvgCpm, lastCtr, lastCost, lastCr]
   ];
-  var lastRange = sheet.getRange('B8:H8');
+  var lastRange = sheet.getRange('B7:H7');
   lastRange.setValues(lastMonthStatValues);
 
   // All Time Stats
