@@ -23,6 +23,9 @@
         // select current account - get account name and return it
             var currentAccount = AdWordsApp.currentAccount();
             var accountName = currentAccount.getName();
+
+        // init variables
+        var minBudget = .50;
     
         // spreadsheet init
     
@@ -214,6 +217,10 @@
           else if (dailyBudget > 25) {
             Logger.log("Budget has calculated over an amount of $25 - adjusting to max budget amount of $20");
             adjustBudget(dailyBudget);
+          }
+          else if(dailyBudget < minBudget) {
+            Logger.log("Budget calculated below .50 - adjust to .50");      
+            adjustBudget(minBudget);
           }
           else if(currentDailyBudget > dailyBudget) {
             Logger.log("Budget has increased over daily calculated budget - adjusting ...");
