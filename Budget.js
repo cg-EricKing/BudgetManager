@@ -45,7 +45,9 @@ var endRow = sheet.getRange(2,4);
 // sheet.clearContents();
 
  // Get the Current Campaigns in the Account
-   var campaignIterator = AdWordsApp.campaigns().get();
+   var campaignIterator = AdWordsApp.campaigns()
+    .withCondition("Status != PAUSED")
+    .get();
     Logger.log('Total campaigns found : ' + campaignIterator.totalNumEntities());
     while(campaignIterator.hasNext()) {
         var campaign = campaignIterator.next();
@@ -67,7 +69,7 @@ var endRow = sheet.getRange(2,4);
     }
 
 
-var accountName = sheet.getRange(ROW, COLUMN.accountName).getValue();
+var accountName = sheet.getRange(ROW, COLUMN.accountName).getValue() + "$";
 var orderedImpressions = sheet.getRange(ROW, COLUMN.orderedImpressions).getValue();
 var emailForNotify = sheet.getRange(ROW, COLUMN.email).getValue();
   
@@ -150,7 +152,7 @@ function notify(string) {
   // Total ordered monthly impressions - current impressions = impressions remaining for the month
 
   // impressions remaining for the month / days remaining before end of the month = estimated daily impressions needed per day  
-  var maxBudget = 4.50;
+  var maxBudget = 20;
   var decrementByPercentage = dailyBudget * .25;
 
   // New days remaining variable - comes from spreadsheet
@@ -158,8 +160,10 @@ function notify(string) {
   newDaysRemaining = parseInt(newDaysRemaining);
   Logger.log("New Days Remaining Variable From SS: " + newDaysRemaining);
 
-  // Calculate the number or impressions left
-  var impressionsRemaining = orderedImpressions - currentImpressions;
+  // Calculate the number or impressions left for SMALLER ACCOUNTS
+  // var impressionsRemaining = orderedImpressions - currentImpressions;
+  var impressionsRemaining = orderedImpressions - allImpressions;
+
     
   // Calculate the number of daily impressions
   var dailyImpressions = impressionsRemaining / newDaysRemaining;
@@ -206,7 +210,7 @@ function notify(string) {
   }
   else if(dailyBudget < 0) {
     Logger.log("Daily budget is outside of where we want it to be - may be a negative number " + dailyBudget);
-    notify("Budget calculated incorrectly");
+    notify("Budget calculated incorrectly or this account is overdelivering!");
     // adjustBudget(decrementByPercentage);
   }
   else if(dailyImpressions < 0) {
@@ -217,9 +221,9 @@ function notify(string) {
       adjustBudget(decrementByPercentage);
     }
   }
-  else if (dailyBudget > 5) {
-    Logger.log("Budget has calculated over an amount of $5 - adjusting to max budget amount of $4.50");
-    adjustBudget(maxBudget);
+  else if (dailyBudget > 25) {
+    Logger.log("Budget has calculated over an amount of $25 - adjusting to max budget amount of $20");
+    adjustBudget(dailyBudget);
   }
   else if(currentDailyBudget > dailyBudget) {
     Logger.log("Budget has increased over daily calculated budget - adjusting ...");
