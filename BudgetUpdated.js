@@ -6,7 +6,7 @@
 // Select the current campaigns that are ENABLED
 // After selecting the current enabled campaign - Iterate to find out if more then 1 campaign is running
 // Once the current campaign(s) have been selected grab the stat values needed from that campaign
-// Send the stats to thier own 2d array - select the right cell values to place the stats into the spreadsheet
+// Send the stats to their own 2d array - select the right cell values to place the stats into the spreadsheet
 // Calculate the daily budget for the current campaign(s) - including daily impressions calculations
 // Write a function to adjust the current budget to the calulated daily budget
 // Create use case conditional logic for the following
@@ -54,11 +54,27 @@
             var orderedImpressions = sheet.getRange(startRow, headerColumn.orderedImpressions).getValue();
             var emailForNotify = sheet.getRange(startRow, headerColumn.email).getValue();
               
-            Logger.log("Account Name From SS: " + accountName);
-            Logger.log("Ordered Impressions From SS: " + orderedImpressions);
-            Logger.log("Email For Notify From SS: " + emailForNotify);
+            Logger.log("Account Name From DH API: " + accountName);
+            Logger.log("Ordered Impressions From DH API: " + orderedImpressions);
+            Logger.log("Email For Notify From DH API: " + emailForNotify);
+        
+        // **** URL Fetch
+        // var accountName = '';
+        // var orderedImpressions = 0;
+        // var emailForNotify = '';
+
+        // var apiKey = '';
+
+        // var apiUrl = '' + apiKey;
+
+        // var response = UrlFetchApp.fetch(apiUrl);
+        // var json = response.getContentText();
+        // var fetchData = JSON.parse(json);
+        // Logger.log(fetchData);
     
-    
+        // Logger.log("Account Name From DH API: " + accountName);
+        // Logger.log("Ordered Impressions From DH API: " + orderedImpressions);
+        // Logger.log("Email For Notify From DH API: " + emailForNotify);
     
     
     
