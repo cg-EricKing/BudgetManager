@@ -23,9 +23,6 @@
         // select current account - get account name and return it
             var currentAccount = AdWordsApp.currentAccount();
             var accountName = currentAccount.getName();
-
-        // init variables
-        var minBudget = .50;
     
         // spreadsheet init
     
@@ -80,8 +77,18 @@
     
         // Email function to pass string and send through to email provided
         function notify(string) {
-            MailApp.sendEmail(emailForNotify, accountName, string);
+        // Construct email template for notifications
+        // Must have to, subject, htmlBody
+        var emailTemplate = {
+            to: emailForNotify,
+            subject: accountName,
+            htmlBody: "<h1>Comporium Media Services Automation Scripts</h1>" + "<br>" + "<p>This account has encountered an issue</p>" + accountName +
+            "<br>" + "<p>The issue is with this campaign: </p>" + campaignName + "<br>" + "<p>This is what is wrong - </p>" + string + "<p>If something is incorrect with this notification please notify - Eric King</p>"
         }
+            MailApp.sendEmail(emailTemplate);
+        }
+
+
     
         // Get the current Campaign in the account
     
@@ -92,8 +99,8 @@
             var campaignIterator = campaignSelector.get();
             while(campaignIterator.hasNext()) {
                 var campaign = campaignIterator.next();
-    
-                Logger.log(campaign.getName());
+                var campaignName = campaign.getName();
+                Logger.log(campaignName);
     
                 var currentDailyBudget = campaign.getBudget().getAmount();
                 Logger.log("current daily budget: " + currentDailyBudget);
@@ -107,6 +114,9 @@
     
                 var avgCpm = campaign.getStatsFor("LAST_7_DAYS");
                 var currentCpm = avgCpm.getAverageCpm();
+                var cpmRange = sheet.getRange(13,5);
+                var cpmArray = [[currentCpm]];
+                cpmRange.setValues(cpmArray);
                 Logger.log("current cpm: " + currentCpm);
                 
                 // current stats
@@ -117,9 +127,9 @@
                 var currentCtr = currentStats.getCtr();
                 var currentCpc = currentStats.getAverageCpc();
                 var currentConversions = currentStats.getConversions();
-                var currentConversionRate = currentStats.getConversionRate();
+                var currentCpm = currentStats.getAverageCpm();
     
-                var currentArray = [[currentImpressions, currentClicks, currentCost, currentCtr, currentCpc, currentConversions, currentConversionRate]];
+                var currentArray = [[currentImpressions, currentClicks, currentCost, currentCtr, currentCpc, currentCpm, currentConversions]];
                 var currentRange = sheet.getRange('B8:H8');
                 currentRange.setValues(currentArray);
                 Logger.log("Current stats: " + currentArray);
@@ -131,9 +141,9 @@
                 var allCtr = allStats.getCtr();
                 var allCpc = allStats.getAverageCpc();
                 var allConversions = allStats.getConversions();
-                var allConversionRate = allStats.getConversionRate();
+                var allCpm = allStats.getAverageCpm();
     
-                var allArray = [[allImpressions, allClicks, allCost, allCtr, allCpc, allConversions, allConversionRate]];
+                var allArray = [[allImpressions, allClicks, allCost, allCtr, allCpc, allCpm, allConversions]];
                 var allRange = sheet.getRange('B9:H9');
                 allRange.setValues(allArray);
                 Logger.log("All time array: " + allArray);
@@ -145,9 +155,9 @@
                 var lastCtr = lastStats.getCtr();
                 var lastCpc = lastStats.getAverageCpc();
                 var lastConversions = lastStats.getConversions();
-                var lastConversionRate = lastStats.getConversionRate();
+                var lastCpm = lastStats.getAverageCpm();
     
-                var lastArray = [[lastImpressions, lastClicks, lastCost, lastCtr, lastCpc, lastConversions, lastConversionRate]];
+                var lastArray = [[lastImpressions, lastClicks, lastCost, lastCtr, lastCpc, lastCpm, lastConversions]];
                 var lastRange = sheet.getRange('B7:H7');
                 lastRange.setValues(lastArray);
                 Logger.log("Last month stats: " + lastArray);
@@ -158,6 +168,7 @@
     
             // impressions remaining for the month / days remaining before end of the month = estimated daily impressions needed per day  
             var maxBudget = 20;
+            var minBudget = .50;
             // Need to figure out a higher decrement variable - work in a way to to have different decremental values
             var decrementByPercentage = dailyBudget * .25;
     
@@ -206,33 +217,58 @@
             }
         }
         }
+
+        var endsSoonYes = 'Yes';
+        var endsSoonNo = "No";
+
+        var endsRange = sheet.getRange(17,4);
+        var endsArray = [[endsSoonYes]];
+        endsRange.setValues(endsArray);
+
+        var accountFlagRange = sheet.getRange(17,3);
     
     
     
         if(currentDailyBudget === 0) {
             Logger.log("Budget is 0");
             notify("Budget has depleted for this account - please take a look at the account.");
+            var depletedFlag = [["Budget depleted"]];
+            accountFlagRange.setValues(depletedFlag);
           }
           else if (currentBiddingStrategy != "MANUAL_CPM") {
             Logger.log("Not a correct bidding strategy for this script - please use the correct script");
             notify("Not a correct bidding strategy for this script - please use the correct script");
+            var bidStratFlag = [["Not a correct Bidding Strategy!"]];
+            accountFlagRange.setValues(bidStratFlag);
           }
           else if(dailyBudget < 0) {
             Logger.log("Daily budget is outside of where we want it to be - may be a negative number " + dailyBudget);
             notify("Budget calculated incorrectly or this account is overdelivering!");
+            var overdeliveringFlag = [["Campaign Overdelivering!"]];
+            accountFlagRange.setValues(overdeliveringFlag);
             // adjustBudget(decrementByPercentage);
           }
           else if(dailyImpressions < 0) {
             Logger.log("Daily Impressions have overdelivered");
-            if(dailyImpressions > orderedImpressions) {
-              Logger.log("Calculated daily impressions are over monthly total...");
-              notify("Calculated daily impressions have exceeded the monthly total - please take a look at this account");
-              adjustBudget(decrementByPercentage);
-            }
+            notify("Daily impression calculations indicates campaign is overdelivering");
+            var dailyImpressionFlagRange = sheet.getRange(15, 4);
+            var dailyImpressionFlag = [["Over delivering!"]];
+            dailyImpressionFlagRange.setValues(dailyImpressionFlag);
+            // Add a better flag to spreadsheet
+          }
+          else if(allImpressions > orderedImpressions) {
+            Logger.log("Calculated daily impressions are over impression goal...");
+            notify("All time impressions have exceeded the overall goal - budget adjusted to .50");
+            var totalImpressionFlag = [["Impressions exceed goal."]];
+            accountFlagRange.setValues(totalImpressionFlag);
+            adjustBudget(minBudget);
           }
           else if (dailyBudget > 25) {
             Logger.log("Budget has calculated over an amount of $25 - adjusting to max budget amount of $20");
+            notify("Daily budget calculated over $25 max budget - budget adjusted to $20, please double check to see if this is correct");
             adjustBudget(dailyBudget);
+            var maxBudgetFlag = [["Calculated over max"]];
+            accountFlagRange.setValues(maxBudgetFlag);
           }
           else if(dailyBudget < minBudget) {
             Logger.log("Budget calculated below .50 - adjust to .50");      
@@ -241,12 +277,12 @@
           else if(currentDailyBudget > dailyBudget) {
             Logger.log("Budget has increased over daily calculated budget - adjusting ...");
             adjustBudget(dailyBudget);
-            notify("Budget has increased over the daily calculated budget and has been adjusted for this account");
+            //notify("Budget has increased over the daily calculated budget and has been adjusted for this account");
           } 
           else if(currentDailyBudget < dailyBudget) {
             Logger.log("Budget has decreased over daily calculated budget - adjusting ...");
             adjustBudget(dailyBudget);
-            notify("Budget has decreased below the daily calculated budget and has been adjusted for this account.");
+            //notify("Budget has decreased below the daily calculated budget and has been adjusted for this account.");
           }
           else {
             Logger.log("Budget is holding - no adjustment necessary")
