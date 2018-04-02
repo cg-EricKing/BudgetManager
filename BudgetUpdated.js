@@ -83,7 +83,8 @@
             to: emailForNotify,
             subject: accountName,
             htmlBody: "<h1>Comporium Media Services Automation Scripts</h1>" + "<br>" + "<p>This account has encountered an issue</p>" + accountName +
-            "<br>" + "<p>The issue is with this campaign: </p>" + campaignName + "<br>" + "<p>This is what is wrong - </p>" + string + "<p>If something is incorrect with this notification please notify - Eric King</p>"
+            "<br>" + "<p>The issue is with this campaign: </p>" + campaignName + "<br>" + "<p>This is what is wrong - </p>" + "<br>"
+            + string + "<p>Total Impressions Currently: " + avgImpressions + "<br>" +"<p>If something is incorrect with this notification please reply to this email. Thanks!</p>"
         }
             MailApp.sendEmail(emailTemplate);
         }
@@ -91,7 +92,7 @@
 
     
         // Get the current Campaign in the account
-    
+            // Add another condition filter to grab a specific campaign running (Pacing Label on campaign)
             var campaignSelector = AdWordsApp
             .campaigns()
             .withCondition("Status = ENABLED");
@@ -113,6 +114,7 @@
                 budgetRange.setValues(budgetArray);
     
                 var avgCpm = campaign.getStatsFor("LAST_7_DAYS");
+                var avgImpressions = avgCpm.getImpressions();
                 var currentCpm = avgCpm.getAverageCpm();
                 var cpmRange = sheet.getRange(13,5);
                 var cpmArray = [[currentCpm]];
@@ -129,8 +131,8 @@
                 var currentConversions = currentStats.getConversions();
                 var currentCpm = currentStats.getAverageCpm();
     
-                var currentArray = [[currentImpressions, currentClicks, currentCost, currentCtr, currentCpc, currentCpm, currentConversions]];
-                var currentRange = sheet.getRange('B8:H8');
+                var currentArray = [[currentImpressions, currentClicks, currentCost, currentCtr, currentCpc, currentCpm]];
+                var currentRange = sheet.getRange('B8:G8');
                 currentRange.setValues(currentArray);
                 Logger.log("Current stats: " + currentArray);
                 // all time stats
@@ -143,8 +145,8 @@
                 var allConversions = allStats.getConversions();
                 var allCpm = allStats.getAverageCpm();
     
-                var allArray = [[allImpressions, allClicks, allCost, allCtr, allCpc, allCpm, allConversions]];
-                var allRange = sheet.getRange('B9:H9');
+                var allArray = [[allImpressions, allClicks, allCost, allCtr, allCpc, allCpm]];
+                var allRange = sheet.getRange('B9:G9');
                 allRange.setValues(allArray);
                 Logger.log("All time array: " + allArray);
                 // last month stats
@@ -157,8 +159,8 @@
                 var lastConversions = lastStats.getConversions();
                 var lastCpm = lastStats.getAverageCpm();
     
-                var lastArray = [[lastImpressions, lastClicks, lastCost, lastCtr, lastCpc, lastCpm, lastConversions]];
-                var lastRange = sheet.getRange('B7:H7');
+                var lastArray = [[lastImpressions, lastClicks, lastCost, lastCtr, lastCpc, lastCpm]];
+                var lastRange = sheet.getRange('B7:G7');
                 lastRange.setValues(lastArray);
                 Logger.log("Last month stats: " + lastArray);
         }
