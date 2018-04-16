@@ -1,5 +1,6 @@
 // Script to set campaign budget to .50 if the campaign is over-delivering
     // Apply this script to any accounts that are Max Clicks - VCPM accounts have full pacing script
+    // Make sure that the spreadsheet url, email and ordered impressions are correct
 
 // Main function
 function main() {
