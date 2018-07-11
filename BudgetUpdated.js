@@ -25,10 +25,10 @@
             var accountName = currentAccount.getName();
     
         // spreadsheet init
-    
+    // ****************************************************** EDIT HERE ONLY ****************************************
             // add spreadsheet link here
             var spreadsheet_url = 'https://docs.google.com/spreadsheets/d/19Yxqs5uguoZ4rVU7eN4eFFt_DCvcIjyXtMnZ1C0jBds/edit?usp=sharing';
-            
+    // ****************************************************************************************************************        
                 var headerColumn = {
                     accountName: 2,
                     orderedImpressions: 3,
@@ -41,13 +41,15 @@
                 Logger.log('Using spreadsheet - %s.', spreadsheet_url);
                 // open ss
                 var spreadsheet = SpreadsheetApp.openByUrl(spreadsheet_url);
-                // init sheet - update for the sheet number
+
+    // ********************************** EDIT HERE ONLY ****************************************************************            
+                // init sheet - update for the sheet number - sheets start at 0 and go up by 1
                 var sheet = spreadsheet.getSheets()[0];
-    
+    // ******************************************************************************************************************
     
     
         // Grab SS Data
-            var accountName = sheet.getRange(startRow, headerColumn.accountName).getValue() + "$";
+            var accountName = "$" + " " + sheet.getRange(startRow, headerColumn.accountName).getValue();
             var orderedImpressions = sheet.getRange(startRow, headerColumn.orderedImpressions).getValue();
             var emailForNotify = sheet.getRange(startRow, headerColumn.email).getValue();
               
@@ -141,7 +143,9 @@
                 var allClicks = allStats.getClicks();
                 var allCost = allStats.getCost();
                 var allCtr = allStats.getCtr();
+                Logger.log("All CTR for Max Clicks Check - " + allCtr);
                 var allCpc = allStats.getAverageCpc();
+                Logger.log("All CPC for Max Clicks Check - " + allCpc);
                 var allConversions = allStats.getConversions();
                 var allCpm = allStats.getAverageCpm();
     
@@ -268,7 +272,7 @@
           else if (dailyBudget > 25) {
             Logger.log("Budget has calculated over an amount of $25 - adjusting to max budget amount of $20");
             notify("Daily budget calculated over $25 max budget - budget adjusted to $20, please double check to see if this is correct");
-            adjustBudget(dailyBudget);
+            adjustBudget(maxBudget);
             var maxBudgetFlag = [["Calculated over max"]];
             accountFlagRange.setValues(maxBudgetFlag);
           }
